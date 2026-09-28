@@ -24,6 +24,41 @@ const safeUrl = (value) => {
   } catch { return null; }
 };
 
+function spotifyEmbedUrl(value) {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'https:' || url.hostname !== 'open.spotify.com') return null;
+    const match = url.pathname.match(/^\/(?:intl-[a-z]{2}\/)?(?:embed\/)?(track|album|playlist|artist|show|episode)\/([a-zA-Z0-9]+)\/?$/);
+    return match ? `https://open.spotify.com/embed/${match[1]}/${match[2]}` : null;
+  } catch { return null; }
+}
+
+function youtubeEmbedUrl(value) {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'https:') return null;
+    let id;
+    if (url.hostname === 'youtu.be') id = url.pathname.slice(1);
+    else if (['youtube.com', 'www.youtube.com', 'm.youtube.com', 'www.youtube-nocookie.com'].includes(url.hostname)) {
+      id = url.pathname === '/watch' ? url.searchParams.get('v') : url.pathname.match(/^\/(?:embed|shorts)\/([a-zA-Z0-9_-]+)\/?$/)?.[1];
+    }
+    return /^[a-zA-Z0-9_-]{11}$/.test(id || '') ? `https://www.youtube-nocookie.com/embed/${id}` : null;
+  } catch { return null; }
+}
+
+function appleMusicEmbed(value) {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'https:' || !['music.apple.com', 'embed.music.apple.com'].includes(url.hostname)) return null;
+    const match = url.pathname.match(/^\/([a-z]{2})\/(song|album|playlist|artist)\/([a-zA-Z0-9-]+)\/(\d+|pl\.[a-zA-Z0-9]+)\/?$/);
+    if (!match) return null;
+    const embed = new URL(`https://embed.music.apple.com${url.pathname}`);
+    const songId = url.searchParams.get('i');
+    if (songId && /^\d+$/.test(songId)) embed.searchParams.set('i', songId);
+    return { url: embed.href, height: match[2] === 'song' || songId ? 150 : 450 };
+  } catch { return null; }
+}
+
 async function notion(endpoint, options = {}) {
   for (let attempt = 0; attempt < 4; attempt++) {
     const response = await fetch(`${apiRoot}${endpoint}`, {
@@ -119,8 +154,16 @@ async function renderBlocks(blocks, notionUrl) {
     else if (type === 'to_do') result.push(`<p>${data.checked ? '☑' : '☐'} ${text}</p>${children}`);
     else if (type === 'toggle') result.push(`<details><summary>${text}</summary>${children}</details>`);
     else if (type === 'bookmark' || type === 'link_preview' || type === 'embed' || type === 'video' || type === 'pdf') {
-      const href = safeUrl(data.url ?? data.external?.url ?? data.file?.url);
-      result.push(href ? `<p><a href="${href}" rel="noopener noreferrer">${text || escaped(data.caption ? plainText(data.caption) : '外部コンテンツを開く')}</a></p>` : '');
+      const rawUrl = data.url ?? data.external?.url ?? data.file?.url;
+      const href = safeUrl(rawUrl);
+      const label = text || escaped(plainText(data.caption) || '外部コンテンツを開く');
+      const spotify = (type === 'embed' || type === 'video') ? spotifyEmbedUrl(rawUrl) : null;
+      const youtube = (type === 'embed' || type === 'video') ? youtubeEmbedUrl(rawUrl) : null;
+      const appleMusic = (type === 'embed' || type === 'video') ? appleMusicEmbed(rawUrl) : null;
+      if (spotify) result.push(`<figure><iframe title="Spotifyプレイヤー" src="${spotify}" width="100%" height="352" style="border:0;border-radius:12px;max-width:100%;" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe><figcaption><a href="${href}" rel="noopener noreferrer">Spotifyで開く</a></figcaption></figure>`);
+      else if (youtube) result.push(`<figure><iframe title="YouTube動画" src="${youtube}" width="100%" height="420" style="border:0;border-radius:12px;max-width:100%;" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe><figcaption><a href="${href}" rel="noopener noreferrer">YouTubeで開く</a></figcaption></figure>`);
+      else if (appleMusic) result.push(`<figure><iframe title="Apple Musicプレイヤー" src="${appleMusic.url}" width="100%" height="${appleMusic.height}" style="border:0;border-radius:12px;max-width:100%;" loading="lazy" allow="autoplay *; encrypted-media *; fullscreen *" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation"></iframe><figcaption><a href="${href}" rel="noopener noreferrer">Apple Musicで開く</a></figcaption></figure>`);
+      else result.push(href ? `<p><a href="${href}" rel="noopener noreferrer">${label}</a></p>` : '');
     } else if (type === 'child_page') result.push(`<p><a href="${escaped(notionUrl)}">${escaped(data.title || '子ページをNotionで読む')}</a></p>`);
     else result.push(`<p><a href="${escaped(notionUrl)}">このコンテンツはNotionで読む</a></p>`);
   }
