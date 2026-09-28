@@ -4,11 +4,14 @@ import posts from '../generated/posts.json';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const canonical = new URL(`${base}/`, Astro.site).href;
-const description = '60年代ロックやパワーポップなどの音楽、バンド活動、情報科学、プログラミングについて書いている個人ブログです。';
+const description = '音楽に関する事や、情報科学などの記事を気が向いたら投稿する予定です。Notionで書いた記事をAstroで公開しているブログです。';
 ---
-<Layout title="Kawanabe Notion Blog" description={description} canonical={canonical}>
-  <h1>Kawanabe Notion Blog</h1>
-  <p class="muted">音楽、情報科学、プログラミングなどについて書いています。</p>
+<Layout title="Kawanabe Astro Notion Blog!" description={description} canonical={canonical}>
+  <h1>Kawanabe Astro Notion Blog!</h1>
+  <p>音楽に関する事や、情報科学などの記事を気が向いたら投稿する予定です。</p>
+  <p>こんにちは川鍋です。ブログを始める方法っていろいろありますが、Notionは高専時代によく使わされたので、これを使ってブログをやってみます。</p>
+  <p>ところが、Notionで公開したブログはいつまでたっても検索エンジンにインデックスされないので、記事を書く場所はNotionのまま、公開サイトをAstroで作り直しました。</p>
+  <p>本ブログには閲覧者によるリアクション機能はありません。感想などございましたら、私に直接会いに来て言ってください。</p>
   <h2>記事一覧</h2>
   {posts.length === 0 ? <p>公開中の記事はまだありません。</p> : <ol class="post-list">
     {posts.map((post) => <li>
