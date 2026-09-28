@@ -1,0 +1,24 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import posts from '../../generated/posts.json';
+
+export function getStaticPaths() {
+  return posts.map((post) => ({ params: { id: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const canonical = new URL(`${base}/posts/${post.id}/`, Astro.site).href;
+---
+<Layout title={`${post.title} | Kawanabe Notion Blog`} description={post.excerpt} canonical={canonical} type="article">
+  <article>
+    <p><a href={`${base}/`}>← 記事一覧へ戻る</a></p>
+    <h1>{post.title}</h1>
+    <time datetime={post.date}>{post.date.replaceAll('-', '/')}</time>
+    {post.tags.length > 0 && <ul class="tags">{post.tags.map((tag) => <li>{tag}</li>)}</ul>}
+    <div class="body" set:html={post.html} />
+  </article>
+</Layout>
+<style>
+  .body { margin-top: 42px; }
+</style>

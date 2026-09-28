@@ -1,0 +1,17 @@
+{
+  "name": "rkaw-blog",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/sync-notion.mjs && astro build",
+    "dev": "node scripts/sync-notion.mjs && astro dev",
+    "preview": "astro preview",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "astro": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=20.11.0"
+  }
+}

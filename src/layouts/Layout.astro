@@ -1,0 +1,58 @@
+---
+const { title, description, canonical, type = 'website' } = Astro.props;
+const home = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/`;
+---
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="google-site-verification" content="8FxO1M2t2NVo8AbtUNZ6GM1a3At-R-HPgh07t3VSo_M" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+    <link rel="alternate" type="application/rss+xml" title="Kawanabe Notion Blog" href={`${home}rss.xml`} />
+    <style is:global>
+      :root { color-scheme: light; font-family: system-ui, -apple-system, 'Noto Sans JP', sans-serif; color: #252525; background: #faf9f6; }
+      * { box-sizing: border-box; }
+      body { margin: 0; line-height: 1.85; }
+      a { color: #245277; text-underline-offset: .18em; overflow-wrap: anywhere; }
+      a:hover { color: #102b42; }
+      header { border-bottom: 1px solid #ddd9d2; background: #fff; }
+      .shell { max-width: 790px; margin: auto; padding: 0 22px; }
+      header .shell { padding-top: 14px; padding-bottom: 14px; }
+      .brand { color: #202020; font-size: 1.05rem; font-weight: 700; text-decoration: none; }
+      main { padding-top: 50px !important; padding-bottom: 80px !important; min-height: 70vh; }
+      h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); line-height: 1.4; letter-spacing: -.025em; }
+      h2, h3 { line-height: 1.5; }
+      .muted, time { color: #666; }
+      .tags { display: flex; flex-wrap: wrap; gap: 7px; padding: 0; list-style: none; }
+      .tags li { border-radius: 100px; background: #eceae4; color: #42423f; font-size: .82rem; padding: 1px 11px; }
+      .post-list { list-style: none; padding: 0; }
+      .post-list > li { padding: 22px 0; border-bottom: 1px solid #ddd9d2; }
+      .post-list h2 { font-size: 1.3rem; margin: 5px 0; }
+      .post-list h2 a { text-decoration: none; }
+      .post-list p { margin: 4px 0 10px; }
+      article { overflow-wrap: anywhere; }
+      article p, article li { line-height: 1.95; }
+      article img { max-width: 100%; height: auto; border-radius: 3px; }
+      article figure { margin: 30px 0; }
+      article figcaption { color: #666; font-size: .87rem; }
+      article pre { overflow-x: auto; padding: 18px; background: #252525; color: #f8f8f8; border-radius: 5px; }
+      article code { overflow-wrap: normal; }
+      article blockquote { margin: 24px 0; padding-left: 16px; border-left: 3px solid #999; color: #555; }
+      article hr { border: 0; border-top: 1px solid #ddd9d2; margin: 36px 0; }
+      footer { border-top: 1px solid #ddd9d2; padding: 25px 0; color: #666; font-size: .9rem; }
+    </style>
+  </head>
+  <body>
+    <header><div class="shell"><a class="brand" href={home}>Kawanabe Notion Blog</a></div></header>
+    <main class="shell"><slot /></main>
+    <footer><div class="shell">音楽、情報科学、プログラミングなどについて。</div></footer>
+  </body>
+</html>
