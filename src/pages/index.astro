@@ -5,6 +5,7 @@ import posts from '../generated/posts.json';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const canonical = new URL(`${base}/`, Astro.site).href;
 const description = '音楽に関する事や、情報科学などの記事を気が向いたら投稿する予定です。Notionで書いた記事をAstroで公開しているブログです。';
+const tags = [...new Set(posts.flatMap((post) => post.tags))].sort((a, b) => a.localeCompare(b, 'ja'));
 ---
 <Layout title="Kawanabe Astro Notion Blog!" description={description} canonical={canonical}>
   <h1>Kawanabe Astro Notion Blog!</h1>
@@ -13,12 +14,53 @@ const description = '音楽に関する事や、情報科学などの記事を�
   <p>ところが、Notionで公開したブログはいつまでたっても検索エンジンにインデックスされないので、記事を書く場所はNotionのまま、公開サイトをAstroで作り直しました。</p>
   <p>本ブログには閲覧者によるリアクション機能はありません。感想などございましたら、私に直接会いに来て言ってください。</p>
   <h2>記事一覧</h2>
+  {posts.length > 0 && <div class="post-filters">
+    <label for="post-search">キーワード検索</label>
+    <input id="post-search" type="search" placeholder="タイトル・概要・タグを検索" autocomplete="off" />
+    <label for="post-tag">タグ</label>
+    <select id="post-tag">
+      <option value="">すべてのタグ</option>
+      {tags.map((tag) => <option value={tag}>{tag}</option>)}
+    </select>
+  </div>}
+  <p id="no-results" hidden>該当する記事はありません。</p>
   {posts.length === 0 ? <p>公開中の記事はまだありません。</p> : <ol class="post-list">
-    {posts.map((post) => <li>
+    {posts.map((post) => <li data-search={`${post.title} ${post.excerpt} ${post.tags.join(' ')}`.toLocaleLowerCase('ja')} data-tags={JSON.stringify(post.tags)}>
       <time datetime={post.date}>{post.date.replaceAll('-', '/')}</time>
       <h2><a href={`${base}/posts/${post.id}/`}>{post.title}</a></h2>
       <p>{post.excerpt}</p>
       {post.tags.length > 0 && <ul class="tags">{post.tags.map((tag) => <li>{tag}</li>)}</ul>}
     </li>)}
   </ol>}
+  <style>
+    .post-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 20px 0; }
+    .post-filters input, .post-filters select { font: inherit; padding: 7px 10px; border: 1px solid #aaa; border-radius: 4px; background: #fff; color: inherit; max-width: 100%; }
+    .post-filters input { flex: 1 1 220px; }
+    .post-filters select { flex: 1 1 160px; }
+  </style>
+  <script>
+    const search = document.querySelector<HTMLInputElement>('#post-search');
+    const tag = document.querySelector<HTMLSelectElement>('#post-tag');
+    const items = document.querySelectorAll<HTMLLIElement>('.post-list > li');
+    const empty = document.querySelector<HTMLElement>('#no-results');
+
+    function filterPosts() {
+      const keywords = (search?.value ?? '').trim().toLocaleLowerCase('ja').split(/\s+/).filter(Boolean);
+      const selectedTag = tag?.value ?? '';
+      let visibleCount = 0;
+
+      for (const item of items) {
+        const text = item.dataset.search ?? '';
+        const itemTags: string[] = JSON.parse(item.dataset.tags ?? '[]');
+        const visible = keywords.every((keyword) => text.includes(keyword)) && (!selectedTag || itemTags.includes(selectedTag));
+        item.hidden = !visible;
+        if (visible) visibleCount++;
+      }
+
+      if (empty) empty.hidden = visibleCount !== 0;
+    }
+
+    search?.addEventListener('input', filterPosts);
+    tag?.addEventListener('change', filterPosts);
+  </script>
 </Layout>
