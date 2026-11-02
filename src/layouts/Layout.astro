@@ -1,6 +1,5 @@
----
-import '../styles/global.css';
 
+---
 const { title, description, canonical, type = 'website' } = Astro.props;
 const home = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/`;
 ---
@@ -19,6 +18,7 @@ const home = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/`;
     <meta property="og:url" content={canonical} />
     <meta name="twitter:card" content="summary" />
     <link rel="alternate" type="application/rss+xml" title="Kawanabe Astro Notion Blog" href={`${home}rss.xml`} />
+
     <style is:global>
       :root { color-scheme: light; font-family: system-ui, -apple-system, 'Noto Sans JP', sans-serif; color: #252525; background: #faf9f6; }
       * { box-sizing: border-box; }
@@ -50,6 +50,41 @@ const home = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/`;
       article blockquote { margin: 24px 0; padding-left: 16px; border-left: 3px solid #999; color: #555; }
       article hr { border: 0; border-top: 1px solid #ddd9d2; margin: 36px 0; }
       footer { border-top: 1px solid #ddd9d2; padding: 25px 0; color: #666; font-size: .9rem; }
+
+      /* Notionの表を横スクロール可能にする */
+      .notion-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        margin: 1.5rem 0;
+      }
+
+      /* Notionの表全体 */
+      .notion-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+      }
+
+      /* 表のセル */
+      .notion-table th,
+      .notion-table td {
+        border: 1px solid #d1d5db;
+        padding: 0.75rem;
+        text-align: left;
+        vertical-align: top;
+        overflow-wrap: anywhere;
+      }
+
+      /* 表の見出し */
+      .notion-table th {
+        background-color: #f3f4f6;
+        font-weight: 600;
+      }
+
+      /* 表の偶数行 */
+      .notion-table tbody tr:nth-child(even) {
+        background-color: #f9fafb;
+      }
     </style>
   </head>
   <body>
