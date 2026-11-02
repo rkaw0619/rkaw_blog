@@ -1,4 +1,6 @@
 ---
+import '../styles/global.css';
+
 const { title, description, canonical, type = 'website' } = Astro.props;
 const home = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/`;
 ---
